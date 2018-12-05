@@ -5,7 +5,7 @@ VisualStudioVersion = 15.0.27004.2010
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LogoFX.Core", "LogoFX.Core\LogoFX.Core.csproj", "{6490D4C8-1379-4448-96F1-8BAB571C04E8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LogoFX.Core.Tests", "LogoFX.Core.Tests\LogoFX.Core.Tests.csproj", "{FDA482D8-90FB-4C19-A7E4-F71BC63BC802}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LogoFX.Core.Tests", "LogoFX.Core.Tests\LogoFX.Core.Tests.csproj", "{54860FA8-4B08-4E5F-ABB2-21C8ACEDB724}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -17,10 +17,10 @@ Global
 		{6490D4C8-1379-4448-96F1-8BAB571C04E8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6490D4C8-1379-4448-96F1-8BAB571C04E8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6490D4C8-1379-4448-96F1-8BAB571C04E8}.Release|Any CPU.Build.0 = Release|Any CPU
-		{FDA482D8-90FB-4C19-A7E4-F71BC63BC802}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{FDA482D8-90FB-4C19-A7E4-F71BC63BC802}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{FDA482D8-90FB-4C19-A7E4-F71BC63BC802}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{FDA482D8-90FB-4C19-A7E4-F71BC63BC802}.Release|Any CPU.Build.0 = Release|Any CPU
+		{54860FA8-4B08-4E5F-ABB2-21C8ACEDB724}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{54860FA8-4B08-4E5F-ABB2-21C8ACEDB724}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{54860FA8-4B08-4E5F-ABB2-21C8ACEDB724}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{54860FA8-4B08-4E5F-ABB2-21C8ACEDB724}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

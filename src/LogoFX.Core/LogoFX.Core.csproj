@@ -4,8 +4,8 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <AssemblyName>LogoFX.Core</AssemblyName>
     <RootNamespace>LogoFX.Core</RootNamespace>
-    <AssemblyVersion>1.1.1.0</AssemblyVersion>
-    <FileVersion>1.1.1.0</FileVersion>
+    <AssemblyVersion>2.0.0.0</AssemblyVersion>
+    <FileVersion>2.0.0.0</FileVersion>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -14,7 +14,7 @@
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <OutputPath>..\Bin\netstandard2.0\Release</OutputPath>
-    <DocumentationFile>..\Bin\netstandard2.0\Release\netstandard2.0\LogoFX.Core.xml</DocumentationFile>
+    <DocumentationFile>..\Bin\netstandard2.0\Release\LogoFX.Core.xml</DocumentationFile>
   </PropertyGroup> 
 
 </Project>
