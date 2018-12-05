@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -27,16 +28,16 @@ namespace LogoFX.Core.Tests
                 for (int i = 100; i >= 0; i--)
                 {
                     col.Remove(i);
-                    Thread.Sleep(1);
+                    Task.Delay(1).Wait();
                 }
             });
             var copy = new int[100];
 
             var task2 = new Task(() => col.CopyTo(copy, 0));
             task1.Start();
-            Thread.Sleep(10);
+            Task.Delay(10).Wait();
             task2.Start();
-            Task.WaitAll(new[] { task1, task2 });
+            Task.WaitAll(task1, task2);
 
             Assert.That(copy[2], Is.EqualTo(2));
         }
@@ -47,8 +48,7 @@ namespace LogoFX.Core.Tests
             Assert.DoesNotThrow(() => new ConcurrentObservableCollection<int>());
         }
 
-#if NET45
-[Test]
+        [Test]
         public void Performance_MonitorNumberOfAllocatedThreads()
         {
             int maxNumberOfThreads = 0;
@@ -76,7 +76,6 @@ namespace LogoFX.Core.Tests
             Console.WriteLine("Max number of threads  {0}", maxNumberOfThreads);
             Assert.That(maxNumberOfThreads - currentNumberOfThreads, Is.LessThan(10), "too many threads created");
         }
-#endif
 
 
         [Test]
@@ -111,21 +110,18 @@ namespace LogoFX.Core.Tests
             int res1 = 1;
             var task1 = new Task(() => col.ForEach(c =>
             {
-                Thread.Sleep(1);
+                Task.Delay(1).Wait();
                 res1 = 1;
             }));
             var task2 = new Task(() => col.ForEach(c =>
             {
-                Thread.Sleep(1);
+                Task.Delay(1).Wait();
                 res1++;
             }));
             task1.Start();
             task2.Start();
-            Task.WaitAll(new[] { task1, task2 });
+            Task.WaitAll(task1, task2);
             Assert.That(res1, Is.LessThan(99));
-#if NET45
-            Debug.Print("result: {0}", res1);
-#endif
         }
 
         [Test]
