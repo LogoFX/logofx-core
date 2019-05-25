@@ -364,19 +364,13 @@ namespace LogoFX.Core
         public WeakDelegateBase(Delegate handler) :
             base(handler.Target)
         {
-#if WinRT
-            Method = (MethodInfo)handler.GetType().GetRuntimeProperty("Method").GetValue(handler);
-#elif NET45            
-            Method = handler.Method;
-#else
             Method = handler.GetMethodInfo();
-#endif
         }
 
         /// <summary>
         /// Gets the method used by this delegate.
         /// </summary>
-        public MethodInfo Method { get; private set; }
+        public MethodInfo Method { get; }
 
         /// <summary>
         /// Invokes this delegate with the given parameters.

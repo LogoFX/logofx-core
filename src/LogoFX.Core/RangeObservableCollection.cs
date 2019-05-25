@@ -52,7 +52,7 @@ namespace LogoFX.Core
             if (range == null)
                 return;
 
-            int initialindex = Count;
+            int initialIndex = Count;
 
             var enumerable = range as T[] ?? range.ToArray();
             if (!enumerable.Any())
@@ -68,7 +68,7 @@ namespace LogoFX.Core
             _suppressNotification = false;
             OnPropertyChanged(new PropertyChangedEventArgs("Count"));
             OnPropertyChanged(new PropertyChangedEventArgs("Item[]"));
-            OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, new List<T>(enumerable), initialindex));
+            OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, new List<T>(enumerable), initialIndex));
         }
 
         /// <summary>

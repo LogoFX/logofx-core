@@ -20,7 +20,7 @@ namespace LogoFX.Core
         public static object FirstOrDefault(this IEnumerable source)
         {
             if (source == null)
-                throw new ArgumentNullException("source");
+                throw new ArgumentNullException(nameof(source));
 
             IEnumerator enumerator = source.GetEnumerator();
             enumerator.Reset();
@@ -37,7 +37,7 @@ namespace LogoFX.Core
         {
             if (ie == null)
             {
-                throw new ArgumentNullException("ie");
+                throw new ArgumentNullException(nameof(ie));
             }            
             using (IEnumerator<T> enumerator = ie.GetEnumerator())
             {                
@@ -59,7 +59,7 @@ namespace LogoFX.Core
         {
             if (ie == null)
             {
-                throw new ArgumentNullException("ie");
+                throw new ArgumentNullException(nameof(ie));
             }  
             int index = 0;
             using (IEnumerator<T> enumerator = ie.GetEnumerator())
@@ -97,7 +97,7 @@ namespace LogoFX.Core
         {
             if (ie == null)
             {
-                throw new ArgumentNullException("ie");
+                throw new ArgumentNullException(nameof(ie));
             }  
             using (IEnumerator<T> enumerator = ie.GetEnumerator())
             {
@@ -119,7 +119,7 @@ namespace LogoFX.Core
         {
             if (ie == null)
             {
-                throw new ArgumentNullException("ie");
+                throw new ArgumentNullException(nameof(ie));
             }  
             int index = 0;
             using (IEnumerator<T> enumerator = ie.GetEnumerator())
