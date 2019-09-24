@@ -1,22 +1,29 @@
-﻿using NUnit.Framework;
+﻿using System.Collections.Generic;
+using FluentAssertions;
+using Xunit;
 
 namespace LogoFX.Core.Tests
 {
-    [TestFixture]
     public class StringExtensionsTests
     {
-        [Test]
-        [TestCase("5", "5")]
-        [TestCase("y_s", "ys")]
-        [TestCase("yS", "y S")]
-        [TestCase("Y s", "Ys")]
-        [TestCase("y s", "ys")]
-        [TestCase("SomeEnum", "Some Enum")]
+        public static readonly List<object[]> SourceData =
+            new List<object[]>
+            {
+                new object[] {"5", "5"},
+                new object[] {"y_s", "ys"},
+                new object[] {"yS", "y S"},
+                new object[] {"Y s", "Ys"},
+                new object[] {"y s", "ys"},
+                new object[] {"SomeEnum", "Some Enum"},
+            };
+
+        [Theory]
+        [MemberData(nameof(SourceData))]
         public void StringBeautify_ProvidingSourceString_ResultIsCorrect(string source, string expectedResult)
         {
             var actualResult = source.Beautify();
 
-            Assert.AreEqual(expectedResult, actualResult);
+            actualResult.Should().Be(expectedResult);
         }
     }
 }

@@ -5,15 +5,14 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using NUnit.Framework;
+using FluentAssertions;
+using Xunit;
 
 namespace LogoFX.Core.Tests
 {
-
-    [TestFixture]    
     public class ConcurrentObservableCollectionTests
     {
-        [Test]
+        [Fact]
         public void CopyTo_CopyCollectionWhileRemoving()
         {
             var array = new int[100];
@@ -21,6 +20,7 @@ namespace LogoFX.Core.Tests
             {
                 array[i] = i;
             }
+
             var col = new ConcurrentObservableCollection<int>(array);
 
             var task1 = new Task(() =>
@@ -39,16 +39,18 @@ namespace LogoFX.Core.Tests
             task2.Start();
             Task.WaitAll(task1, task2);
 
-            Assert.That(copy[2], Is.EqualTo(2));
+            copy[2].Should().Be(2);
         }
 
-        [Test]
+        [Fact]
         public void Ctor_DoesntThrow()
         {
-            Assert.DoesNotThrow(() => new ConcurrentObservableCollection<int>());
+            var exception = Record.Exception(() => new ConcurrentObservableCollection<int>());
+
+            exception.Should().BeNull();
         }
 
-        [Test]
+        [Fact]
         public void Performance_MonitorNumberOfAllocatedThreads()
         {
             int maxNumberOfThreads = 0;
@@ -73,12 +75,14 @@ namespace LogoFX.Core.Tests
                     }
                 }
             }
+
             Console.WriteLine("Max number of threads  {0}", maxNumberOfThreads);
-            Assert.That(maxNumberOfThreads - currentNumberOfThreads, Is.LessThan(10), "too many threads created");
+
+            (maxNumberOfThreads - currentNumberOfThreads).Should()
+                .BeLessThan(10, "the number of threads should be low");
         }
 
-
-        [Test]
+        [Fact]
         public void ReadWrite_EnumeratingThreadTriesToWriteToCollection_NoDeadlock()
         {
             var array = new int[100];
@@ -86,17 +90,18 @@ namespace LogoFX.Core.Tests
             {
                 array[i] = i;
             }
+
             var col = new ConcurrentObservableCollection<int>(array);
 
             var task1 = new Task(() => col.ForEach(col.Add));
             task1.Start();
 
-            Task.WaitAll(new[] { task1 });
+            Task.WaitAll(task1);
 
-            Assert.That(col.Count, Is.EqualTo(200));
+            col.Count.Should().Be(200);
         }
 
-        [Test]
+        [Fact]
         public void Read_2ConcurrentEnumerations_BothEnumerationsAreExecutedAtSameTime()
         {
             var array = new int[100];
@@ -105,6 +110,7 @@ namespace LogoFX.Core.Tests
             {
                 array[i] = i;
             }
+
             var col = new ConcurrentObservableCollection<int>(array);
 
             int res1 = 1;
@@ -121,13 +127,14 @@ namespace LogoFX.Core.Tests
             task1.Start();
             task2.Start();
             Task.WaitAll(task1, task2);
-            Assert.That(res1, Is.LessThan(99));
+
+            res1.Should().BeLessThan(99);
         }
 
-        [Test]
+        [Fact]
         public void Read_CheckContainsWhileAdding()
         {
-            var col = new ConcurrentObservableCollection<int>(new[] { 1, 2, 3, 4, 5 });
+            var col = new ConcurrentObservableCollection<int>(new[] {1, 2, 3, 4, 5});
             var task1 = new Task(() =>
             {
                 for (int i = 10; i < 1000; i++)
@@ -141,21 +148,21 @@ namespace LogoFX.Core.Tests
             task1.Start();
             Thread.Sleep(5);
             task2.Start();
-            Task.WaitAll(new[] { task1, task2 });
+            Task.WaitAll(task1, task2);
 
-            Assert.True(contains);
+            contains.Should().BeTrue();
         }
 
-        [Test]
+        [Fact]
         public void Read_CheckLengthAfterAdd_LengthIsUpdated()
         {
             var col = new ConcurrentObservableCollection<int>();
             col.Add(1);
 
-            Assert.That(col.Count, Is.EqualTo(1));
+            col.Count.Should().Be(1);
         }
 
-        [Test]
+        [Fact]
         public void Read_ExceptionDuringEnumeration_LockReleased()
         {
             var array = new int[100];
@@ -163,6 +170,7 @@ namespace LogoFX.Core.Tests
             {
                 array[i] = i;
             }
+
             var col = new ConcurrentObservableCollection<int>(array);
 
             try
@@ -183,17 +191,18 @@ namespace LogoFX.Core.Tests
 
             col.Add(3);
 
-            Assert.That(col.Count, Is.EqualTo(101));
+            col.Count.Should().Be(101);
         }
 
-        [Test]
+        [Fact]
         public void ToString_ProperlyPrinted()
         {
-            var col = new ConcurrentObservableCollection<int>(new[] { 1, 2, 3 });
-            Assert.AreEqual("1, 2, 3", col.ToString());
+            var col = new ConcurrentObservableCollection<int>(new[] {1, 2, 3});
+
+            col.ToString().Should().Be("1, 2, 3");
         }
 
-        [Test]
+        [Fact]
         public void WriteAndRead_ConcurrentReadAndWrite_SuccessfullyWritesElementsToCollection()
         {
             var array = new int[50];
@@ -202,6 +211,7 @@ namespace LogoFX.Core.Tests
             {
                 array[i] = i;
             }
+
             var col = new ConcurrentObservableCollection<int>(array);
 
             var task1 = new Task(() =>
@@ -215,82 +225,79 @@ namespace LogoFX.Core.Tests
             var task2 = new Task(() => col.ForEach(c => { current = c; }));
             task1.Start();
             task2.Start();
-            Task.WaitAll(new[] { task1, task2 });
+            Task.WaitAll(task1, task2);
 
-            Assert.That(col.Count, Is.EqualTo(100), "collection was not filled");
-            Assert.That(current, Is.InRange(49, 100), "enumeration was not running simultaneously with update");
-#if NET45
-            Debug.Print("Collection size: {0}", col.Count);
-            Debug.Print("current: {0}", current);
-#endif
+            col.Count.Should().Be(100, "the collection should be populated properly");
+            current.Should().BeInRange(49, 100, " the enumeration should have run in-sync with the update");
         }
 
-        [Test]
+        [Fact]
         public void Write_AddElement_ElementAdded()
         {
             var col = new ConcurrentObservableCollection<string>();
             col.Add("a");
-            Assert.That(col.First(), Is.EqualTo("a"));
+
+            col.First().Should().Be("a");
         }
 
-        [Test]
+        [Fact]
         public void Write_AddNull_ElementAdded()
         {
             var col = new ConcurrentObservableCollection<string>();
-            var expected = new[] { "a", null };
+            var expected = new[] {"a", null};
             col.AddRange(expected);
-            CollectionAssert.AreEquivalent(expected, col);
+
+            col.Should().BeEquivalentTo(expected);
         }
 
-        [Test]
+        [Fact]
         public void Write_AddRange_ElementsAdded()
         {
             var col = new ConcurrentObservableCollection<string>();
-            var expected = new[] { "a", "b" };
+            var expected = new[] {"a", "b"};
             col.AddRange(expected);
-            CollectionAssert.AreEquivalent(expected, col);
+
+            col.Should().BeEquivalentTo(expected);
         }
 
-        [Test]
+        [Fact]
         public void Write_ComplexOperation_CollectionUpdatedProperly()
         {
-            var col = new ConcurrentObservableCollection<string>(new[] { "a", "b", "c" });
-
+            var col = new ConcurrentObservableCollection<string>(new[] {"a", "b", "c"});
             col.Add("d");
             col.Remove("b");
             col.Insert(0, "x");
-            col.AddRange(new[] { "z", "f", "y" });
+            col.AddRange(new[] {"z", "f", "y"});
             col.RemoveAt(4);
-            col.RemoveRange(new[] { "y", "c" });
+            col.RemoveRange(new[] {"y", "c"});
             col[2] = "p";
-            CollectionAssert.AreEquivalent(new[] { "x", "a", "p", "f" }, col);
+
+            col.Should().BeEquivalentTo("x", "a", "p", "f");
         }
 
-
-        [Test]
+        [Fact]
         public void AddRange_5SequentialAdds_CollectionChangeEventsAreReported()
         {
             var col = new ConcurrentObservableCollection<string>(new[] {"a"});
             var argsList = new List<NotifyCollectionChangedEventArgs>();
-            col.CollectionChanged += (sender, args) =>
-            {
-                argsList.Add(args);
-            };
-            col.AddRange(new[] { "z1", "f1", "y1" });
-            col.AddRange(new[] { "z2", "f2", "y2" });
-            col.AddRange(new[] { "z3", "f3", "y3" });
-            col.AddRange(new[] { "z4", "f4", "y4" });
-            col.AddRange(new[] { "z5", "f5", "y5" });
+            col.CollectionChanged += (sender, args) => { argsList.Add(args); };
+            col.AddRange(new[] {"z1", "f1", "y1"});
+            col.AddRange(new[] {"z2", "f2", "y2"});
+            col.AddRange(new[] {"z3", "f3", "y3"});
+            col.AddRange(new[] {"z4", "f4", "y4"});
+            col.AddRange(new[] {"z5", "f5", "y5"});
 
-            Assert.That(argsList.Count(x => x.Action == NotifyCollectionChangedAction.Add), Is.EqualTo(5));
+            argsList.Count(x => x.Action == NotifyCollectionChangedAction.Add).Should().Be(5);
             foreach (var args in argsList)
             {
-                CollectionAssert.AreEquivalent(args.NewItems, col.Skip(args.NewStartingIndex).Take(args.NewItems.Count));
+                col.Skip(args.NewStartingIndex).Take(args.NewItems.Count).Should().BeEquivalentTo(args.NewItems);
             }
-            CollectionAssert.AreEquivalent(new[] { "a", "z1", "f1", "y1", "z2", "f2", "y2", "z3", "f3", "y3", "z4", "f4", "y4", "z5", "f5", "y5" }, col);
+
+            col.Should().BeEquivalentTo("a", "z1", "f1", "y1", "z2", "f2", "y2", "z3", "f3", "y3", "z4", "f4", "y4",
+                "z5", "f5", "y5");
         }
 
-        [Test]
+        [Fact]
         public void Write_ComplexUpdateOperationFrom2ThreadsAndEnumerationInTheMiddle_CollectionUpdatedProperly()
         {
             var array = new int[100];
@@ -298,6 +305,7 @@ namespace LogoFX.Core.Tests
             {
                 array[i] = i;
             }
+
             var col = new ConcurrentObservableCollection<int>(array);
 
             var task1 = new Task(() =>
@@ -327,18 +335,19 @@ namespace LogoFX.Core.Tests
             task2.Start();
             task3.Start();
 
-            Task.WaitAll(new[] { task1, task2, task3 });
+            Task.WaitAll(task1, task2, task3);
 
             var expected = new int[100];
             for (int i = 100; i < 200; i++)
             {
                 expected[i - 100] = i;
             }
-            CollectionAssert.AreEquivalent(expected, col, "collection was not properly updated");
-            CollectionAssert.IsNotEmpty(list, "Enumeration didnt find any element");
+
+            col.Should().BeEquivalentTo(expected, "the collection should be updated properly");
+            list.Should().NotBeEmpty("the enumeration should find at least one element");
         }
 
-        [Test]
+        [Fact]
         public void Write_ComplexUpdateOperationFrom2Threads_CollectionUpdatedProperly()
         {
             var array = new int[100];
@@ -346,6 +355,7 @@ namespace LogoFX.Core.Tests
             {
                 array[i] = i;
             }
+
             var col = new ConcurrentObservableCollection<int>(array);
 
             var task1 = new Task(() =>
@@ -364,17 +374,18 @@ namespace LogoFX.Core.Tests
             });
             task1.Start();
             task2.Start();
-            Task.WaitAll(new[] { task1, task2 });
+            Task.WaitAll(task1, task2);
 
             var expected = new int[100];
             for (int i = 100; i < 200; i++)
             {
                 expected[i - 100] = i;
             }
-            CollectionAssert.AreEquivalent(expected, col);
+
+            col.Should().BeEquivalentTo(expected);
         }
 
-        [Test]
+        [Fact]
         public void Write_ConcurrentWrite_SuccessfullyWritesElementsToCollection()
         {
             var col = new ConcurrentObservableCollection<int>();
@@ -397,14 +408,12 @@ namespace LogoFX.Core.Tests
             });
             task1.Start();
             task2.Start();
-            Task.WaitAll(new[] { task1, task2 });
-            Assert.That(col.Count, Is.LessThan(1000));
-#if NET45
-            Debug.Print("Collection size: {0}", col.Count);
-#endif
+            Task.WaitAll(task1, task2);
+
+            col.Count.Should().BeLessThan(1000);
         }
 
-        [Test]
+        [Fact]
         public void Write_FiresAddEvent()
         {
             var col = new ConcurrentObservableCollection<string>();
@@ -417,11 +426,11 @@ namespace LogoFX.Core.Tests
                 }
             };
             col.Add("a");
-            Assert.That(received, Is.EqualTo("a"));
+
+            received.Should().Be("a");
         }
 
-
-        [Test]
+        [Fact]
         public void AddRange_FiresAddEvent()
         {
             var col = new ConcurrentObservableCollection<string>();
@@ -433,15 +442,15 @@ namespace LogoFX.Core.Tests
                     received = args.NewItems.OfType<string>().First();
                 }
             };
-            col.AddRange(new[] { "a", "b", "c" });
-            Assert.That(received, Is.EqualTo("a"));
+            col.AddRange(new[] {"a", "b", "c"});
+
+            received.Should().Be("a");
         }
 
-
-        [Test]
+        [Fact]
         public void RemoveRange_FiresRemoveEvent()
         {
-            var col = new ConcurrentObservableCollection<string>(new[] { "a", "b", "c" });
+            var col = new ConcurrentObservableCollection<string>(new[] {"a", "b", "c"});
             string received = string.Empty;
             col.CollectionChanged += (sender, args) =>
             {
@@ -450,14 +459,15 @@ namespace LogoFX.Core.Tests
                     received = args.OldItems.OfType<string>().First();
                 }
             };
-            col.RemoveRange(new[] { "a", "b"});
-            Assert.That(received, Is.EqualTo("a"));
+            col.RemoveRange(new[] {"a", "b"});
+
+            received.Should().Be("a");
         }
 
-        [Test]
+        [Fact]
         public void Write_FiresRemoveEvent()
         {
-            var col = new ConcurrentObservableCollection<string>(new[] { "b", "c" });
+            var col = new ConcurrentObservableCollection<string>(new[] {"b", "c"});
             string received = string.Empty;
             col.CollectionChanged += (sender, args) =>
             {
@@ -468,13 +478,13 @@ namespace LogoFX.Core.Tests
             };
             col.Remove("c");
 
-            Assert.That(received, Is.EqualTo("c"));
+            received.Should().Be("c");
         }
 
-        [Test]
+        [Fact]
         public void Write_FiresResetEvent()
         {
-            var col = new ConcurrentObservableCollection<string>(new[] { "b", "c" });
+            var col = new ConcurrentObservableCollection<string>(new[] {"b", "c"});
             bool fired = false;
             col.CollectionChanged += (sender, args) =>
             {
@@ -485,21 +495,22 @@ namespace LogoFX.Core.Tests
             };
             col.Clear();
 
-            Assert.True(fired);
+            fired.Should().BeTrue();
         }
 
-        [Test]
+        [Fact]
         public void Write_InsertElement_ElementInserted()
         {
-            var col = new ConcurrentObservableCollection<string>(new[] { "a", "b", "c" });
+            var col = new ConcurrentObservableCollection<string>(new[] {"a", "b", "c"});
             col.Insert(1, "x");
-            CollectionAssert.AreEqual(col, new[] { "a", "x", "b", "c" });
+
+            col.Should().BeEquivalentTo("a", "x", "b", "c");
         }
 
-        [Test]
+        [Fact]
         public void Write_InsertElement_FiresAddEvent()
         {
-            var col = new ConcurrentObservableCollection<string>(new[] { "a", "b", "c" });
+            var col = new ConcurrentObservableCollection<string>(new[] {"a", "b", "c"});
             NotifyCollectionChangedEventArgs receivedArgs = null;
             col.CollectionChanged += (sender, args) =>
             {
@@ -509,57 +520,62 @@ namespace LogoFX.Core.Tests
                 }
             };
             col.Insert(1, "x");
-            Assert.That(receivedArgs.NewStartingIndex, Is.EqualTo(1), "Index is wrong");
-            CollectionAssert.AreEquivalent(receivedArgs.NewItems, new[] { "x" }, "New items collection wrong");
+
+            receivedArgs.NewStartingIndex.Should().Be(1, "the index should be correct");
+            receivedArgs.NewItems.Should().BeEquivalentTo(new[] {"x"});
         }
 
-        [Test]
+        [Fact]
         public void Write_RemoveElementAtIndex_ElementRemoved()
         {
-            var col = new ConcurrentObservableCollection<string>(new[] { "a", "b", "c" });
+            var col = new ConcurrentObservableCollection<string>(new[] {"a", "b", "c"});
             col.RemoveAt(1);
-            CollectionAssert.AreEqual(new[] { "a", "c" }, col);
+
+            col.Should().BeEquivalentTo("a", "c");
         }
 
-        [Test]
+        [Fact]
         public void Write_RemoveElement_ElementRemoved()
         {
-            var col = new ConcurrentObservableCollection<string>(new[] { "b", "c", "d" });
+            var col = new ConcurrentObservableCollection<string>(new[] {"b", "c", "d"});
             col.Remove("b");
-            CollectionAssert.AreEquivalent(col, new[] { "c", "d" });
+
+            col.Should().BeEquivalentTo("c", "d");
         }
 
-
-        [Test]
+        [Fact]
         public void Write_RemoveNotExisting_DoesntFail()
         {
-            var col = new ConcurrentObservableCollection<string>(new[] { "b", "c", "d" });
+            var col = new ConcurrentObservableCollection<string>(new[] {"b", "c", "d"});
 
-            col.RemoveRange(new[] { "b", "X" });
-            CollectionAssert.AreEquivalent(new[] { "c", "d" }, col);
+            col.RemoveRange(new[] {"b", "X"});
+
+            col.Should().BeEquivalentTo("c", "d");
         }
 
-        [Test]
+        [Fact]
         public void Write_RemoveRange_ElementsRemoved()
         {
-            var col = new ConcurrentObservableCollection<string>(new[] { "b", "c", "d" });
+            var col = new ConcurrentObservableCollection<string>(new[] {"b", "c", "d"});
 
-            col.RemoveRange(new[] { "b", "c" });
-            CollectionAssert.AreEquivalent(new[] { "d" }, col);
+            col.RemoveRange(new[] {"b", "c"});
+
+            col.Should().BeEquivalentTo("d");
         }
 
-        [Test]
+        [Fact]
         public void Write_ReplaceElement_ElementReplaced()
         {
-            var col = new ConcurrentObservableCollection<string>(new[] { "a", "b", "c" });
+            var col = new ConcurrentObservableCollection<string>(new[] {"a", "b", "c"});
             col[2] = "z";
-            CollectionAssert.AreEqual(new[] { "a", "b", "z" }, col);
+
+            col.Should().BeEquivalentTo("a", "b", "z");
         }
 
-        [Test]
+        [Fact]
         public void Write_ReplaceElement_FiresReplaceEvent()
         {
-            var col = new ConcurrentObservableCollection<string>(new[] { "a", "b", "c" });
+            var col = new ConcurrentObservableCollection<string>(new[] {"a", "b", "c"});
             NotifyCollectionChangedEventArgs receivedArgs = null;
             col.CollectionChanged += (sender, args) =>
             {
@@ -569,26 +585,23 @@ namespace LogoFX.Core.Tests
                 }
             };
             col[2] = "z";
-            Assert.That(receivedArgs.NewStartingIndex, Is.EqualTo(2), "Index is wrong");
-            CollectionAssert.AreEquivalent(receivedArgs.NewItems, new[] { "z" }, "New items collection wrong");
-            CollectionAssert.AreEquivalent(receivedArgs.OldItems, new[] { "c" }, "Old items collection wrong");
+
+            receivedArgs.NewStartingIndex.Should().Be(2);
+            receivedArgs.NewItems.Should().BeEquivalentTo(new[] {"z"});
+            receivedArgs.OldItems.Should().BeEquivalentTo(new[] {"c"});
         }
 
-        [Test]
+        [Fact]
         public void RemoveRange_AcquireRangeToRemoveUsingLinq_RangeRemovedWithoutExceptions()
         {
-
-            var col = new ConcurrentObservableCollection<string>(new[] { "a", "b", "c" });
-
+            var col = new ConcurrentObservableCollection<string>(new[] {"a", "b", "c"});
             var select = col.Where(c => c.Equals("c"));
-
             col.RemoveRange(select);
 
-            CollectionAssert.AreEquivalent(col, new[] { "a", "b" });
-
+            col.Should().BeEquivalentTo("a", "b");
         }
 
-        [Test]
+        [Fact]
         public void RemoveRange_SequentialRemove_StartFromFirstElement_FiresRemoveEvent()
         {
             var col = new ConcurrentObservableCollection<string>(new[] {"a", "b", "c", "d", "e", "f", "g"});
@@ -603,13 +616,14 @@ namespace LogoFX.Core.Tests
                     oldIndex = args.OldStartingIndex;
                 }
             };
-            col.RemoveRange(new[] { "a", "b", "c", "d", "e" });
-            Assert.That(oldIndex, Is.EqualTo(0));
-            CollectionAssert.AreEquivalent(received, new[] { "a", "b", "c", "d", "e" });
-            CollectionAssert.AreEquivalent(col, new[] {"f", "g"});
+            col.RemoveRange(new[] {"a", "b", "c", "d", "e"});
+
+            oldIndex.Should().Be(0);
+            received.Should().BeEquivalentTo("a", "b", "c", "d", "e");
+            col.Should().BeEquivalentTo("f", "g");
         }
 
-        [Test]
+        [Fact]
         public void RemoveRange_SequentialRemove_StartFromSecondElement_FiresRemoveEvent()
         {
             var col = new ConcurrentObservableCollection<string>(new[] {"a", "b", "c", "d", "e", "f", "g"});
@@ -625,12 +639,13 @@ namespace LogoFX.Core.Tests
                 }
             };
             col.RemoveRange(new[] {"b", "c", "d", "e"});
-            Assert.That(oldIndex, Is.EqualTo(1));
-            CollectionAssert.AreEquivalent(received, new[] {"b", "c", "d", "e"});
-            CollectionAssert.AreEquivalent(col, new[] {"a", "f", "g"});
+
+            oldIndex.Should().Be(1);
+            received.Should().BeEquivalentTo("b", "c", "d", "e");
+            col.Should().BeEquivalentTo("a", "f", "g");
         }
 
-        [Test]
+        [Fact]
         public void RemoveRange_AllRemove_FiresResetEvent()
         {
             var col = new ConcurrentObservableCollection<string>(new[] {"a", "b", "c", "d", "e", "f"});
@@ -645,16 +660,15 @@ namespace LogoFX.Core.Tests
             };
 
             col.RemoveRange(new[] {"a", "b", "c", "d", "e", "f"});
-            
-            Assert.That(received, Is.EqualTo(1));
-            CollectionAssert.IsEmpty(col);
+
+            received.Should().Be(1);
+            col.Should().BeEmpty();
         }
 
-        [Test]
+        [Fact]
         public void RemoveRange_RemoveOneElement_FiresRemoveEvent()
         {
             var col = new ConcurrentObservableCollection<string>(new[] {"a", "b", "c", "d", "e", "f", "g"});
-
             var received = new List<string>();
             int oldIndex = -1;
             col.CollectionChanged += (sender, args) =>
@@ -666,12 +680,13 @@ namespace LogoFX.Core.Tests
                 }
             };
             col.RemoveRange(new[] {"d"});
-            Assert.That(oldIndex, Is.EqualTo(3));
-            CollectionAssert.AreEquivalent(received, new[] {"d"});
-            CollectionAssert.AreEquivalent(col, new[] {"a", "b", "c", "e", "f", "g"});
+
+            oldIndex.Should().Be(3);
+            received.Should().BeEquivalentTo("d");
+            col.Should().BeEquivalentTo("a", "b", "c", "e", "f", "g");
         }
 
-        [Test]
+        [Fact]
         public void RemoveRange_NotSequentialRemove1_FiresRemoveEvent()
         {
             var col = new ConcurrentObservableCollection<string>(new[] {"a", "b", "c", "d", "e", "f", "g"});
@@ -686,16 +701,15 @@ namespace LogoFX.Core.Tests
             };
             col.RemoveRange(new[] {"b", "c", "a", "d"});
 
-            Assert.That(received.Count, Is.EqualTo(2));
-
-            CollectionAssert.AreEquivalent(received[0].OldItems, new[] {"b", "c"});
-            Assert.That(received[0].OldStartingIndex, Is.EqualTo(1));
-            CollectionAssert.AreEquivalent(received[1].OldItems, new[] {"a", "d"});
-            Assert.That(received[1].OldStartingIndex, Is.EqualTo(0));
-            CollectionAssert.AreEquivalent(col, new[] {"e", "f", "g"});
+            received.Count.Should().Be(2);
+            received[0].OldItems.Should().BeEquivalentTo(new[] {"b", "c"});
+            received[0].OldStartingIndex.Should().Be(1);
+            received[1].OldItems.Should().BeEquivalentTo(new[] {"a", "d"});
+            received[1].OldStartingIndex.Should().Be(0);
+            col.Should().BeEquivalentTo("e", "f", "g");
         }
 
-        [Test]
+        [Fact]
         public void RemoveRange_NotSequentialRemove2_FiresRemoveEvent()
         {
             var col = new ConcurrentObservableCollection<string>(new[] {"a", "b", "c", "d", "e", "f", "g"});
@@ -710,16 +724,15 @@ namespace LogoFX.Core.Tests
             };
             col.RemoveRange(new[] {"b", "c", "f", "g"});
 
-            Assert.That(received.Count, Is.EqualTo(2));
-
-            CollectionAssert.AreEquivalent(received[0].OldItems, new[] {"b", "c"});
-            Assert.That(received[0].OldStartingIndex, Is.EqualTo(1));
-            CollectionAssert.AreEquivalent(received[1].OldItems, new[] {"f", "g"});
-            Assert.That(received[1].OldStartingIndex, Is.EqualTo(3));
-            CollectionAssert.AreEquivalent(col, new[] {"a", "d", "e"});
+            received.Count.Should().Be(2);
+            received[0].OldItems.Should().BeEquivalentTo(new[] {"b", "c"});
+            received[0].OldStartingIndex.Should().Be(1);
+            received[1].OldItems.Should().BeEquivalentTo(new[] {"f", "g"});
+            received[1].OldStartingIndex.Should().Be(3);
+            col.Should().BeEquivalentTo("a", "d", "e");
         }
 
-        [Test]
+        [Fact]
         public void RemoveRange_NotSequentialRemove3_FiresRemoveEvent()
         {
             var col = new ConcurrentObservableCollection<string>(new[] {"a", "b", "c", "d", "e", "f", "g"});
@@ -734,15 +747,15 @@ namespace LogoFX.Core.Tests
             };
             col.RemoveRange(new[] {"b", "c", "a", "g"});
 
-            Assert.That(received.Count, Is.EqualTo(3));
+            received.Count.Should().Be(3);
+            received[0].OldItems.Should().BeEquivalentTo(new[] {"b", "c"});
+            received[0].OldStartingIndex.Should().Be(1);
+            received[1].OldItems.Should().BeEquivalentTo(new[] {"a"});
+            received[1].OldStartingIndex.Should().Be(0);
+            received[2].OldItems.Should().BeEquivalentTo(new[] {"g"});
+            received[2].OldStartingIndex.Should().Be(3);
 
-            CollectionAssert.AreEquivalent(received[0].OldItems, new[] {"b", "c"});
-            Assert.That(received[0].OldStartingIndex, Is.EqualTo(1));
-            CollectionAssert.AreEquivalent(received[1].OldItems, new[] {"a"});
-            Assert.That(received[1].OldStartingIndex, Is.EqualTo(0));
-            CollectionAssert.AreEquivalent(received[2].OldItems, new[] {"g"});
-            Assert.That(received[2].OldStartingIndex, Is.EqualTo(3));
-            CollectionAssert.AreEquivalent(col, new[] {"d", "e", "f"});
+            col.Should().BeEquivalentTo("d", "e", "f");
         }
     }
 }
