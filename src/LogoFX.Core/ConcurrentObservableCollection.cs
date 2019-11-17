@@ -150,10 +150,10 @@ namespace LogoFX.Core
             {
                 _lock.ExitReadLock();
             }
-            foreach (T i in arr)
+            foreach (var i in arr)
             {
                 array.SetValue(i, arrayIndex);
-                arrayIndex = arrayIndex + 1;
+                arrayIndex += 1;
             }
         }
 
@@ -192,10 +192,7 @@ namespace LogoFX.Core
         /// <returns>
         /// The number of elements contained in the <see cref="T:System.Collections.Generic.ICollection`1"/>.
         /// </returns>
-        public int Count
-        {
-            get { return _items.Count; }
-        }
+        public int Count => _items.Count;
 
         /// <summary>
         /// Gets a value indicating whether the <see cref="T:System.Collections.Generic.ICollection`1"/> is read-only.
@@ -203,10 +200,7 @@ namespace LogoFX.Core
         /// <returns>
         /// true if the <see cref="T:System.Collections.Generic.ICollection`1"/> is read-only; otherwise, false.
         /// </returns>
-        public bool IsReadOnly
-        {
-            get { return false; }
-        }
+        public bool IsReadOnly => false;
 
         /// <summary>
         /// Determines the index of a specific item in the <see cref="T:System.Collections.Generic.IList`1"/>.
@@ -245,9 +239,10 @@ namespace LogoFX.Core
             {
                 _lock.ExitWriteLock();
             }
+
             RaiseCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add,
-                                                                        new[] { item },
-                                                                        index));
+                new[] {item},
+                index));
         }
 
         /// <summary>
@@ -267,9 +262,10 @@ namespace LogoFX.Core
             {
                 _lock.ExitWriteLock();
             }
+
             RaiseCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove,
-                                                                        new[] { item },
-                                                                        index));
+                new[] {item},
+                index));
         }
 
         /// <summary>
@@ -308,10 +304,11 @@ namespace LogoFX.Core
                 {
                     _lock.ExitWriteLock();
                 }
+
                 RaiseCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Replace,
-                                                                            new[] { value },
-                                                                            new[] { old },
-                                                                            index));
+                    new[] {value},
+                    new[] {old},
+                    index));
             }
         }
 
@@ -326,7 +323,7 @@ namespace LogoFX.Core
         /// <param name="range"></param>
         public void AddRange(IEnumerable<T> range)
         {
-            var add = range == null ? null : range.ToArray();
+            var add = range?.ToArray();
             if (add == null || add.Length == 0)
             {
                 return;
@@ -362,8 +359,8 @@ namespace LogoFX.Core
             {
                 return;
             }
-            
-            //'range' might be a Linq query of kind that is actualy realized on first access. If i don't unfold this query here, then it will
+
+            //'range' might be a Linq query of kind that is actually realized on first access. If i don't unfold this query here, then it will
             //be unfolded inside write lock on call to ForEach. This will cause exception if 'range' is Linq query on this very same 
             //ConcurrentObservableCollection. The exception will happen because call to ForEach will try to acquire Read lock. But we already got
             //Write lock in the same thread (call to EnterWriteLock already happened). When you try to get Read lock over Write lock in same
@@ -382,8 +379,6 @@ namespace LogoFX.Core
 
             try
             {
-                //rangeArray.ForEach(i => _items.Remove(i));
-               
                 if (enumerable.Length == 1)
                 {
                     var item = enumerable[0];
@@ -395,7 +390,7 @@ namespace LogoFX.Core
                 {
                     var lastIndex = -1;
                     List<T> lastCluster = null;
-                    foreach (T item in enumerable)
+                    foreach (var item in enumerable)
                     {
                         var index = _items.IndexOf(item);
                         if (index < 0)
@@ -417,13 +412,11 @@ namespace LogoFX.Core
                 }
 
             }
-            
+
             finally
             {
                 _lock.ExitWriteLock();
             }
-
-            //RaiseCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, rangeArray.ToList()));
 
             if (Count == 0)
             {
@@ -433,7 +426,8 @@ namespace LogoFX.Core
             {
                 foreach (var cluster in clusters)
                 {
-                    RaiseCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, cluster.Value, cluster.Key));
+                    RaiseCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove,
+                        cluster.Value, cluster.Key));
                 }
             }
         }
@@ -450,7 +444,7 @@ namespace LogoFX.Core
             var builder = new StringBuilder();
             if (_items.Count > 0)
             {
-                _items.ForEach(i => builder.Append(i.ToString() + ", "));
+                _items.ForEach(i => builder.Append(i + ", "));
                 builder.Remove(builder.Length - 2, 2);
             }
 
@@ -459,11 +453,7 @@ namespace LogoFX.Core
 
         private void RaiseCollectionChanged(NotifyCollectionChangedEventArgs args)
         {
-            NotifyCollectionChangedEventHandler temp = CollectionChanged;
-            if (temp != null)
-            {
-                temp(this, args);
-            }
+            CollectionChanged?.Invoke(this, args);
         }
 
         private void EnterWriteLock()
