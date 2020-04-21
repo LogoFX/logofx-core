@@ -7,11 +7,19 @@ using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace LogoFX.Core.Tests
 {
     public class ConcurrentObservableCollectionTests
     {
+        private readonly ITestOutputHelper _testOutputHelper;
+
+        public ConcurrentObservableCollectionTests(ITestOutputHelper testOutputHelper)
+        {
+            _testOutputHelper = testOutputHelper;
+        }
+
         [Fact]
         public void CopyTo_CopyCollectionWhileRemoving()
         {
@@ -57,7 +65,7 @@ namespace LogoFX.Core.Tests
 
             int currentNumberOfThreads = Process.GetCurrentProcess().Threads.Count;
 
-            Console.WriteLine("Number of threads before run {0}", currentNumberOfThreads);
+            _testOutputHelper.WriteLine("Number of threads before run {0}", currentNumberOfThreads);
             for (int j = 0; j < 100; j++)
             {
                 var threadSafe = new ConcurrentObservableCollection<int>();
@@ -76,7 +84,7 @@ namespace LogoFX.Core.Tests
                 }
             }
 
-            Console.WriteLine("Max number of threads  {0}", maxNumberOfThreads);
+            _testOutputHelper.WriteLine("Max number of threads  {0}", maxNumberOfThreads);
 
             (maxNumberOfThreads - currentNumberOfThreads).Should()
                 .BeLessThan(10, "the number of threads should be low");
@@ -186,7 +194,7 @@ namespace LogoFX.Core.Tests
             }
             catch (Exception)
             {
-                Console.WriteLine("Exception was fired");
+                _testOutputHelper.WriteLine("Exception was fired");
             }
 
             col.Add(3);
@@ -312,7 +320,7 @@ namespace LogoFX.Core.Tests
             {
                 for (int i = 100; i < 200; i++)
                 {
-                    Console.WriteLine("Add {0}", i);
+                    _testOutputHelper.WriteLine("Add {0}", i);
                     col.Add(i);
                 }
             });
@@ -320,7 +328,7 @@ namespace LogoFX.Core.Tests
             {
                 for (int i = 0; i < 100; i++)
                 {
-                    Console.WriteLine("Remove {0}", i);
+                    _testOutputHelper.WriteLine("Remove {0}", i);
                     col.Remove(i);
                 }
             });
@@ -328,7 +336,7 @@ namespace LogoFX.Core.Tests
             var list = new List<int>();
             var task3 = new Task(() => col.ForEach(c =>
             {
-                Console.WriteLine("Enumerating {0}", c);
+                _testOutputHelper.WriteLine("Enumerating {0}", c);
                 list.Add(c);
             }));
             task1.Start();

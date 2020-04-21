@@ -5,11 +5,19 @@ using System.Diagnostics;
 using System.Linq;
 using FluentAssertions;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace LogoFX.Core.Tests
 {
     public class RangeObservableCollectionTests
     {
+        private readonly ITestOutputHelper _testOutputHelper;
+
+        public RangeObservableCollectionTests(ITestOutputHelper testOutputHelper)
+        {
+            _testOutputHelper = testOutputHelper;
+        }
+
         [Fact]
         public void Ctor_DoesntThrow()
         {
@@ -25,7 +33,7 @@ namespace LogoFX.Core.Tests
 
             int currentNumberOfThreads = Process.GetCurrentProcess().Threads.Count;
 
-            Console.WriteLine("Number of threads before run {0}", currentNumberOfThreads);
+            _testOutputHelper.WriteLine("Number of threads before run {0}", currentNumberOfThreads);
             for (int j = 0; j < 100; j++)
             {
                 var collection = new RangeObservableCollection<int>();
@@ -44,7 +52,7 @@ namespace LogoFX.Core.Tests
                 }
             }
 
-            Console.WriteLine("Max number of threads  {0}", maxNumberOfThreads);
+            _testOutputHelper.WriteLine("Max number of threads  {0}", maxNumberOfThreads);
             (maxNumberOfThreads - currentNumberOfThreads).Should()
                 .BeLessThan(10, "the number of threads should be low");
         }
@@ -82,7 +90,7 @@ namespace LogoFX.Core.Tests
             }
             catch (Exception)
             {
-                Console.WriteLine("Exception was fired");
+                _testOutputHelper.WriteLine("Exception was fired");
             }
 
             col.Add(3);
