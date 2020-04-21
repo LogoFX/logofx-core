@@ -13,8 +13,10 @@ namespace LogoFX.Core
     /// </summary>
     /// <typeparam name="T"></typeparam>
     /// <seealso cref="ObservableCollection{T}" />
-    public class RangeObservableCollection<T> : ObservableCollection<T>, IRangeCollection<T>
+    public class RangeObservableCollection<T> : ObservableCollection<T>, IRangeCollection<T>, ISuppressNotify
     {
+        private readonly INotifyManager _notifyManager = new NotifyManager();
+
         /// <summary>
         /// Initializes a new instance of the <see cref="RangeObservableCollection{T}"/> class.
         /// </summary>
@@ -31,7 +33,13 @@ namespace LogoFX.Core
         {
         }
 
-        private bool _suppressNotify;
+        IDisposable ISuppressNotify.SuppressNotify => SuppressNotify;
+
+        /// <summary>
+        /// Gets the suppress notify.
+        /// To be used in <c>using</c> statement.
+        /// </summary>
+        protected IDisposable SuppressNotify => new SuppressNotifyHelper(_notifyManager);
 
         /// <summary>
         /// Raises the <see cref="E:System.Collections.ObjectModel.ObservableCollection`1.CollectionChanged"/> event with the provided arguments.
@@ -39,7 +47,7 @@ namespace LogoFX.Core
         /// <param name="e">Arguments of the event being raised.</param>
         protected override void OnCollectionChanged(NotifyCollectionChangedEventArgs e)
         {
-            if (!_suppressNotify)
+            if (!_notifyManager.IsMuted)
                 base.OnCollectionChanged(e);
         }
 
@@ -58,14 +66,14 @@ namespace LogoFX.Core
             if (!enumerable.Any())
                 return;
 
-            _suppressNotify = true;
-           
-            foreach (var item in enumerable)
+            using (SuppressNotify)
             {
-                Add(item);
+                foreach (var item in enumerable)
+                {
+                    Add(item);
+                }
             }
-           
-            _suppressNotify = false;
+
             OnPropertyChanged(new PropertyChangedEventArgs("Count"));
             OnPropertyChanged(new PropertyChangedEventArgs("Item[]"));
             OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, new List<T>(enumerable), initialIndex));
@@ -132,32 +140,31 @@ namespace LogoFX.Core
                 }
             }
 
-            _suppressNotify = true;
-
             var clusters = new Dictionary<int, List<T>>();
-            var lastIndex = -1;
-            List<T> lastCluster = null;
-            foreach (T item in enumerable)
+            using (SuppressNotify)
             {
-                var index = IndexOf(item);
-                if (index < 0)
+                var lastIndex = -1;
+                List<T> lastCluster = null;
+                foreach (T item in enumerable)
                 {
-                    continue;
-                }
+                    var index = IndexOf(item);
+                    if (index < 0)
+                    {
+                        continue;
+                    }
 
-                Items.RemoveAt(index);
+                    Items.RemoveAt(index);
 
-                if (lastIndex == index && lastCluster != null)
-                {
-                    lastCluster.Add(item);
-                }
-                else
-                {
-                    clusters[lastIndex = index] = lastCluster = new List<T> { item };
+                    if (lastIndex == index && lastCluster != null)
+                    {
+                        lastCluster.Add(item);
+                    }
+                    else
+                    {
+                        clusters[lastIndex = index] = lastCluster = new List<T> { item };
+                    }
                 }
             }
-
-            _suppressNotify = false;
             OnPropertyChanged(new PropertyChangedEventArgs(nameof(Count)));
             OnPropertyChanged(new PropertyChangedEventArgs("Item[]"));
 
@@ -180,7 +187,7 @@ namespace LogoFX.Core
         /// <param name="e">Arguments of the event being raised.</param>
         protected override void OnPropertyChanged(PropertyChangedEventArgs e)
         {
-            if (!_suppressNotify)
+            if (!_notifyManager.IsMuted)
             {
                 base.OnPropertyChanged(e);
             }
