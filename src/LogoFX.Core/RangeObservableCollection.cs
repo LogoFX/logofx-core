@@ -12,7 +12,7 @@ namespace LogoFX.Core
     /// of collection of items as single operation.
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    /// <seealso cref="System.Collections.ObjectModel.ObservableCollection{T}" />
+    /// <seealso cref="ObservableCollection{T}" />
     public class RangeObservableCollection<T> : ObservableCollection<T>, IRangeCollection<T>
     {
         /// <summary>
@@ -31,7 +31,7 @@ namespace LogoFX.Core
         {
         }
 
-        private bool _suppressNotification;
+        private bool _suppressNotify;
 
         /// <summary>
         /// Raises the <see cref="E:System.Collections.ObjectModel.ObservableCollection`1.CollectionChanged"/> event with the provided arguments.
@@ -39,7 +39,7 @@ namespace LogoFX.Core
         /// <param name="e">Arguments of the event being raised.</param>
         protected override void OnCollectionChanged(NotifyCollectionChangedEventArgs e)
         {
-            if (!_suppressNotification)
+            if (!_suppressNotify)
                 base.OnCollectionChanged(e);
         }
 
@@ -58,14 +58,14 @@ namespace LogoFX.Core
             if (!enumerable.Any())
                 return;
 
-            _suppressNotification = true;
+            _suppressNotify = true;
            
             foreach (var item in enumerable)
             {
                 Add(item);
             }
            
-            _suppressNotification = false;
+            _suppressNotify = false;
             OnPropertyChanged(new PropertyChangedEventArgs("Count"));
             OnPropertyChanged(new PropertyChangedEventArgs("Item[]"));
             OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, new List<T>(enumerable), initialIndex));
@@ -132,7 +132,7 @@ namespace LogoFX.Core
                 }
             }
 
-            _suppressNotification = true;
+            _suppressNotify = true;
 
             var clusters = new Dictionary<int, List<T>>();
             var lastIndex = -1;
@@ -157,7 +157,7 @@ namespace LogoFX.Core
                 }
             }
 
-            _suppressNotification = false;
+            _suppressNotify = false;
             OnPropertyChanged(new PropertyChangedEventArgs(nameof(Count)));
             OnPropertyChanged(new PropertyChangedEventArgs("Item[]"));
 
@@ -180,7 +180,7 @@ namespace LogoFX.Core
         /// <param name="e">Arguments of the event being raised.</param>
         protected override void OnPropertyChanged(PropertyChangedEventArgs e)
         {
-            if (_suppressNotification == false)
+            if (!_suppressNotify)
             {
                 base.OnPropertyChanged(e);
             }
