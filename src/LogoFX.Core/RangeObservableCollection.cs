@@ -11,7 +11,7 @@ namespace LogoFX.Core
     /// Observable collection that allows performing addition and removal
     /// of collection of items as single operation.
     /// </summary>
-    /// <typeparam name="T"></typeparam>
+    /// <typeparam name="T">The item type.</typeparam>
     /// <seealso cref="ObservableCollection{T}" />
     public class RangeObservableCollection<T> : ObservableCollection<T>, IRangeCollection<T>, ISuppressNotify
     {
