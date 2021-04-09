@@ -12,5 +12,5 @@
     <releaseNotes>Added option for muting/unmuting notifications.</releaseNotes>
     <tags>framework logofx core</tags>
     <repository type="Open Source" url="https://github.com/LogoFX/logofx-core" />
-  </metadata>  
+  </metadata>
 </package>
