@@ -279,10 +279,7 @@ namespace LogoFX.Core
         /// <returns>
         /// true if the object referenced by the current <see cref="WeakReference{T}"/> object has not been garbage collected and is still accessible; otherwise, false.
         /// </returns>
-        public override bool IsAlive
-        {
-            get { return true; }
-        }
+        public override bool IsAlive => true;
     }
 
     /// <summary>
@@ -328,10 +325,7 @@ namespace LogoFX.Core
         /// <value>
         /// The target.
         /// </value>
-        public T Target
-        {
-            get { return (T)_inner.Target; }
-        }
+        public T Target => (T)_inner.Target;
 
         /// <summary>
         /// Gets an indication whether the object referenced by the current <see cref="WeakReference{T}"/> object has been garbage collected.
@@ -340,13 +334,7 @@ namespace LogoFX.Core
         /// <returns>
         /// true if the object referenced by the current <see cref="WeakReference{T}"/> object has not been garbage collected and is still accessible; otherwise, false.
         /// </returns>
-        public virtual bool IsAlive
-        {
-            get
-            {
-                return this._inner.IsAlive;
-            }
-        }
+        public virtual bool IsAlive => _inner.IsAlive;
     }
 
     /// <summary>

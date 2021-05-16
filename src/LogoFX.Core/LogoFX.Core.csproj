@@ -1,27 +1,25 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-  
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
-    <Version>2.1.0</Version>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Version>2.2.0</Version>
     <Authors>Gennady Verdel, David Kossoglyad, Vlad Spivak, Dmitry Bublik</Authors>
-    <Company>Gennady Verdel, David Kossoglyad</Company>
     <Product>LogoFX</Product>
     <Description>LogoFX Core assemblies containing collections and weak objects implementations.</Description>
     <PackageProjectUrl>https://github.com/logofx</PackageProjectUrl>
     <PackageIconUrl>https://github.com/LogoFX/logofx-assets/blob/master/icons/icon.png?raw=true</PackageIconUrl>
     <RepositoryUrl>https://github.com/LogoFX/logofx-core</RepositoryUrl>
     <PackageTags>framework logofx core</PackageTags>
-    <PackageReleaseNotes>Added support for .NET Core 3.0</PackageReleaseNotes>
+    <PackageReleaseNotes>Added option for muting/unmuting notifications.</PackageReleaseNotes>
+    <Owners>Gennady Verdel</Owners>
+    <Company>Gennady Verdel</Company>
+    <RepositoryType>Open Source</RepositoryType>
   </PropertyGroup>
-
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <OutputPath>..\Bin\netstandard\Release</OutputPath>
     <DocumentationFile>..\Bin\netstandard\Release\LogoFX.Core.xml</DocumentationFile>
     <EmbedAllSources>True</EmbedAllSources>
     <DebugType>embedded</DebugType>
     <DebugSymbols>true</DebugSymbols>
-  </PropertyGroup> 
-
+  </PropertyGroup>
 </Project>

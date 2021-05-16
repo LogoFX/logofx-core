@@ -3,7 +3,7 @@
 namespace LogoFX.Core
 {
     /// <summary>
-    /// Designates object than can suppress some notification
+    /// Designates object than can suppress some notification.
     /// </summary>
     public interface ISuppressNotify
     {
