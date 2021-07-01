@@ -5,4 +5,6 @@ core framework utilities, including weak implementations.
 
 <img src=https://img.shields.io/nuget/dt/LogoFX.Core>
 
+[![CodeFactor](https://www.codefactor.io/repository/github/logofx/logofx-inversion-of-control/badge?style=for-the-badge/master)](https://www.codefactor.io/repository/github/logofx/logofx-inversion-of-control/overview/master)
+
 [Get package](https://www.nuget.org/packages/LogoFX.Core/)
