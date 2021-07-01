@@ -5,6 +5,6 @@ core framework utilities, including weak implementations.
 
 <img src=https://img.shields.io/nuget/dt/LogoFX.Core>
 
-[![CodeFactor](https://www.codefactor.io/repository/github/logofx/logofx-core/badge?style=for-the-badge/master)](https://www.codefactor.io/repository/github/logofx/logofx-core/overview/master)
+[![CodeFactor](https://www.codefactor.io/repository/github/logofx/logofx-core/badge)](https://www.codefactor.io/repository/github/logofx/logofx-core)
 
 [Get package](https://www.nuget.org/packages/LogoFX.Core/)
