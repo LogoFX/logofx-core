@@ -410,9 +410,7 @@ namespace LogoFX.Core
                         }
                     }
                 }
-
             }
-
             finally
             {
                 _lock.ExitWriteLock();

@@ -125,27 +125,34 @@ namespace LogoFX.Core
 
             if (beforeResetAction != null && enumerable.Length >= Count)
             {
-                int count = Count;
-                foreach (var item in enumerable)
-                {
-                    if (Contains(item))
-                    {
-                        --count;
-                    }
-                }
-
-                if (count == 0)
-                {
-                    beforeResetAction(enumerable);
-                }
+                RemoveCollectionAndNotify(beforeResetAction, enumerable);
             }
 
+            var clusters = CalculateClusters(enumerable);
+            OnPropertyChanged(new PropertyChangedEventArgs(nameof(Count)));
+            OnPropertyChanged(new PropertyChangedEventArgs("Item[]"));
+
+            if (Count == 0)
+            {
+                OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
+            }
+            else
+            {
+                foreach (var cluster in clusters)
+                {
+                    OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, cluster.Value, cluster.Key));
+                }
+            }
+        }
+
+        private Dictionary<int, List<T>> CalculateClusters(T[] enumerable)
+        {
             var clusters = new Dictionary<int, List<T>>();
             using (SuppressNotify)
             {
                 var lastIndex = -1;
                 List<T> lastCluster = null;
-                foreach (T item in enumerable)
+                foreach (var item in enumerable)
                 {
                     var index = IndexOf(item);
                     if (index < 0)
@@ -161,25 +168,30 @@ namespace LogoFX.Core
                     }
                     else
                     {
-                        clusters[lastIndex = index] = lastCluster = new List<T> { item };
+                        clusters[lastIndex = index] = lastCluster = new List<T> {item};
                     }
                 }
             }
-            OnPropertyChanged(new PropertyChangedEventArgs(nameof(Count)));
-            OnPropertyChanged(new PropertyChangedEventArgs("Item[]"));
 
-            if (Count == 0)
+            return clusters;
+        }
+
+        private void RemoveCollectionAndNotify(Action<IEnumerable<T>> beforeResetAction, T[] enumerable)
+        {
+            var count = Count;
+            foreach (var item in enumerable)
             {
-                OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
-            }
-            else
-            {
-                foreach (KeyValuePair<int, List<T>> cluster in clusters)
+                if (Contains(item))
                 {
-                    OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, cluster.Value, cluster.Key));
+                    --count;
                 }
             }
-        }        
+
+            if (count == 0)
+            {
+                beforeResetAction(enumerable);
+            }
+        }
 
         /// <summary>
         /// Raises the <see cref="E:System.Collections.ObjectModel.ObservableCollection`1.PropertyChanged"/> event with the provided arguments.

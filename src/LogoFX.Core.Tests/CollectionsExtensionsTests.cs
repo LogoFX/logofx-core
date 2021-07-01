@@ -183,7 +183,6 @@ namespace LogoFX.Core.Tests
             var stringBuilder = new StringBuilder();
             Action<string, int> action = (r, t) => stringBuilder.Append(r);
 
-
             var exception = Record.Exception(() => collection.ForEach(0, 1, action).ToArray());
             exception.Should().BeOfType<ArgumentNullException>();
         }
