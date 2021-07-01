@@ -13,7 +13,6 @@ namespace LogoFX.Core
     {
         private readonly WeakReference _inner;
 
-
         /// <summary>
         /// Creates <see cref="WeakReference{T}"/> from the provided target.
         /// </summary>
@@ -36,7 +35,6 @@ namespace LogoFX.Core
         {
             if (target == null) throw new ArgumentNullException("target");
             _inner = new WeakReference(target);
-
         }
 
         /// <summary>
