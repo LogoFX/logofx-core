@@ -1,5 +1,5 @@
 SET package_name=LogoFX.Core
-SET package_version=2.2.1-rc1
+SET package_version=2.2.1
 cd ../build
 call build.bat
 cd ../pack
