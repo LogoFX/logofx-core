@@ -158,7 +158,7 @@ namespace LogoFX.Core.Tests
             argsList.Count(x => x.Action == NotifyCollectionChangedAction.Add).Should().Be(5);
             foreach (var args in argsList)
             {
-                col.Skip(args.NewStartingIndex).Take(args.NewItems.Count).Should().BeEquivalentTo(args.NewItems);
+                col.Skip(args.NewStartingIndex).Take(args.NewItems.Count).Should().BeEquivalentTo(args.NewItems.OfType<string>());
             }
 
             col.Should().BeEquivalentTo("a", "z1", "f1", "y1", "z2", "f2", "y2", "z3", "f3", "y3", "z4", "f4", "y4",
