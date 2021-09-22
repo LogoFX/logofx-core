@@ -8,3 +8,5 @@ core framework utilities, including weak implementations.
 <img src=https://img.shields.io/nuget/dt/LogoFX.Core>
 
 [Get package](https://www.nuget.org/packages/LogoFX.Core/)
+
+This repository is archived. Its functionality has been moved to https://github.com/LogoFX/core
